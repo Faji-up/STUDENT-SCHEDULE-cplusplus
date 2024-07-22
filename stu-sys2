@@ -1,0 +1,795 @@
+#include <iostream>
+#include <map>
+#include <vector>
+#include <string>
+#include <chrono> // For time calculations
+#include <thread>
+#include <sstream> //For getting the first word in getline string
+#include <cstring> //For strptime function
+#include <ctime> // For getting current time
+#include <algorithm> // For find_if
+#include <cstdlib> // For exit function
+#include <unistd.h>
+#include <fstream>
+
+using namespace std;
+
+//FOR STUDENT
+bool noAccount = false;
+bool exitP = false;
+int user = 0;
+int adminUser = 0;
+int userStudent = 0;
+int userAdmin = 0;
+int accounts = 0;
+int accountA = 0;
+bool transaction = true; //IF TRUE THE LOADING FUNCTION WILL BE DISPLAYED ELSE FALSE WILL NOT DISPLAY
+string currentUser = " ";
+
+void loading() {
+    // Loading Design
+    int animateSymbol = 0;
+    string arrSymbols[4] = {"\\", "|", "/", "-"};
+
+    cout << "\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    for (int x = 0; x <= 3; x++) {
+        cout << "\t\t\t\t\t\tLoading";
+        for (int j = 0; j <= x; j++) {
+            cout << " . ";
+        }
+        cout << " " << arrSymbols[animateSymbol] << "\r";
+        cout.flush();
+
+        animateSymbol++;
+
+        if (animateSymbol == 4) {
+            animateSymbol = 0;
+        }
+
+        for (int h = 0; h <= 30000; h++) {
+            for (int g = 0; g <= 10000; g++) {
+            }
+        }
+    }
+}
+
+// Event structure
+struct Event {
+	string title;
+    string description;
+    string date;
+};
+
+struct account {
+	string name;
+	string password;
+};
+
+struct info {
+	int age;
+	string role;
+	string yAndC;
+};
+
+//VECTOR FOR CREATING AN ACCOUNT/INFO
+vector<string>studentYAndC;
+vector<int>age;
+vector<account>storeAccount;
+vector<account>storeAccountA;
+vector<info>userInfo;
+vector<vector<Event>>eventInfo;
+account activeUser;
+map<string, vector<Event>> events;
+class Calendar {
+	private:
+
+
+		// A function where we can save event to file
+        void saveEventsToFile(const string& userName, const vector<Event>& events) {
+           ofstream file(userName + "_events.txt");
+           if (file.is_open()) {
+             for (const auto& event : events) {
+                 file << event.title << "," << event.description << "," << event.date << endl;
+             }
+             file.close();
+            } else {
+                cout << "Unable to save events to file." << endl;
+           }
+        }
+
+	public:
+
+	//To add all events
+    void addEvent(const string&userName, const Event&eventAdd) {
+    	events[userName].push_back(eventAdd);
+
+    	saveEventsToFile(userName, events[userName]);
+    	eventInfo.push_back(events[userName]);
+        system("cls");
+        cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tAdding Event." << endl;
+        sleep(1);
+        system("cls");
+        cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tEvent added successfully!" << endl;
+        sleep(1);
+        system("cls");
+    }
+
+    // This function is to load event from file
+    vector<Event> loadEventsFromFile(const string& userName) {
+    vector<Event> loadedEvents;
+    ifstream file(userName + "_events.txt");
+    if (file.is_open()) {
+        string line;
+        while (getline(file, line)) {
+            stringstream ss(line);
+            string title, description, date;
+            getline(ss, title, ',');
+            getline(ss, description, ',');
+            getline(ss, date);
+            loadedEvents.push_back({title, description, date});
+        }
+        file.close();
+    } else {
+        cout << "No events found for this user." << endl;
+    }
+    return loadedEvents;
+}
+
+    // View all events
+    void viewEvents(const string& userName) {
+    	events[userName] = loadEventsFromFile(userName);
+        if (events.empty() || events.find(userName) == events.end()) {
+            cout << "\t\t\t\t==================================================" << endl;
+            cout << "\t\t\t\t\a              No events found." << endl;
+            cout << "\t\t\t\t==================================================" << endl;
+            sleep(1);
+            system("cls");
+            return;
+        }
+        system("cls");
+        cout << "\n\n\n\n\n\n\n\n";
+        cout << "\t\t\t\t==================================================" << endl;
+        cout << "\t\t\t\t           Events in the calendar:" << endl;
+        cout << "\t\t\t\t==================================================" << endl;
+        for (const auto& schedEvent : events[userName]){
+
+            cout << "\t\t\t\t           Title: " << schedEvent.title << endl;
+            cout << "\t\t\t\t           Date: " << schedEvent.date << endl;
+            cout << "\t\t\t\t           Description: " << schedEvent.description << endl;
+            cout << "\t\t\t\t--------------------------------------------------" << endl;
+        }
+        cin.ignore();
+        cout << "\t\t\t\t                    [ENTER]                       ";
+        cin.get();
+        system("cls");
+    }
+
+
+    // Delete event by title
+    void deleteEvent(const string&userName, const string& title) {
+        auto& userEvents = events[userName];
+            auto it = find_if(userEvents.begin(), userEvents.end(), [&](const Event& event) {
+                return event.title == title;
+            });
+
+            if (it != userEvents.end()) {
+                userEvents.erase(it);
+                system("cls");
+                cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tDeleting Event ." << endl;
+                this_thread::sleep_for(chrono::seconds(1));
+                system("cls");
+                cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tEvent deleted successfully." << endl;
+                this_thread::sleep_for(chrono::seconds(1));
+                system("cls");
+                saveEventsToFile(userName, events[userName]);
+            } else {
+                cout << "\t\t\t\t==================================================" << endl;
+                cout << "\t\t\t\t\a               Event not found." << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                sleep(1);
+                system("cls");
+            }
+    }
+
+    // Check if event is coming soon and display notification
+    void checkForNotification() {
+        // Get current time
+       /* time_t now = time(nullptr);
+
+        for (const auto& event : events) {
+            // Convert event date string to time structure
+            struct tm tm_event = {};
+            strptime(event.date.c_str(), "%Y-%m-%d %H:%M", &tm_event);
+            time_t eventTime = mktime(&tm_event);
+
+            // Calculate difference in minutes
+            int diffMinutes = difftime(eventTime, now) / 60;
+
+            // If event is within 15 minutes, display notification
+            if (diffMinutes > 0 && diffMinutes <= 15) {
+                cout << "Notification: Event '" << event.title << "' is coming up in " << diffMinutes << " minutes!" << endl;
+                // Simulate notification by sleeping for 2 seconds
+                this_thread::sleep_for(chrono::seconds(2));
+            }
+        }*/
+    }
+
+    void sOrA() {
+       info roleInfo;
+       string roleUser;
+       if(transaction == true) {
+          loading();
+	      system("cls");
+          cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tThank you for waiting!" << endl;
+          sleep(2);
+        }
+        transaction = false;
+	    do{
+	       system("cls");
+	       cout << "\n\n\n\n\n\n\n\n";
+           cout << "\t\t\t\t==================================================" << endl;
+           cout << "\t\t\t\t\t\tSCHEDULING SYSTEM" << endl;
+           cout << "\t\t\t\t==================================================" << endl << endl;
+           cout << "\t\t\t\t__________________________________________________" << endl << "\t\t\t\t=\t\t\t\t\t\t =" << endl;
+           cout << "\t\t\t\t=\t\t[A] Admin.\t\t\t =\n\t\t\t\t=\t\t[S] Student.\t\t\t =\n\t\t\t\t=\t\t[E] Exit.\t\t\t =\n";
+           cout << "\t\t\t\t__________________________________________________" << endl << endl;
+           cout << "\t\t\t\t\t   Please enter your role: ";
+           cin >> roleUser;
+           if(roleUser == "A" || roleUser == "a") {
+              roleInfo.role = "Admin";
+            } else if(roleUser == "S" || roleUser == "s") {
+              roleInfo.role = "Student";
+            }else if(roleUser == "E" || roleUser == "e") {
+            	cout << "\t\t\t\t==================================================" << endl;
+                cout << "\t\t\t\t                     Exit" << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                exitP = true;
+                return;
+            } else {
+             	cout << "\t\t\t\t==================================================" << endl;
+                cout << "\a\t\t\t\t\tInvalid input please try again." << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                sleep(3);
+           }
+           userInfo.push_back(roleInfo);
+
+          // user++;
+
+         if(roleUser == "S" || roleUser == "s") {
+            userStudent++;
+         }
+
+        } while(!(roleUser == "A" || roleUser == "a" || roleUser == "S" || roleUser == "s" || roleUser == "E" || roleUser == "e"));
+    }
+
+    void createAccount() { //FOR USER
+        user++;
+     	char press;
+    	account create;
+    	info accountInfo;
+    	string firstName;
+    	cin.ignore();
+
+    	cout << "\n\n\n\n\n\n\n\n" << endl;
+    	cout << "\t\t\t\t==================================================" << endl;
+    	cout << "\t\t\t\t\t        CREATE ACCOUNT" << endl;
+    	cout << "\t\t\t\t==================================================" << endl;
+	    cout << "\t\t\t\tEnter your name: ";
+    	getline(cin, create.name);
+    	istringstream iss(create.name);
+    	iss >> firstName;
+    	cout << "\t\t\t\tEnter your password: ";
+    	getline(cin, create.password);
+        storeAccount.push_back(create);
+       cout << "\t\t\t\t==================================================" << endl;
+       cout << "\t\t\t\t\t\t    [ENTER]";
+       cin.get(press);
+       system("cls");
+       cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t  Succesfully creating account!" << endl;
+       sleep(1);
+       system("cls");
+       cout << "\n\n\n\n\n\n\n" << endl;
+       cout << "\t\t\t\t==================================================" << endl;
+       cout << "\t\t\t\t\t\t   Welcome " << firstName << "." << endl;
+       cout << "\t\t\t\t==================================================" << endl;
+	   cout << "\t\t\t\t    Please input additional info. Thank you." << endl;
+       cout << "\t\t\t\t==================================================" << endl;
+       cout << "\t\t\t\tEnter your age: ";
+       cin >> accountInfo.age;
+       int studAge = accountInfo.age;
+       cin.ignore();
+       cout << "\t\t\t\tEnter your year, course, & section[BSIT 1E]: ";
+       getline(cin, accountInfo.yAndC);
+
+       string studYAndC = accountInfo.yAndC;
+       studentYAndC.push_back(studYAndC);
+       age.push_back(studAge);
+       userInfo.push_back(accountInfo);
+
+       system("cls");
+       loading();
+       system("cls");
+       cout << "\n\n\n\n\n\n\n" << endl;
+       cout << "\n\n\t\t\t\t==================================================" << endl;
+       cout << "\t\t\t\t               STUDENT PROFILE" << endl;
+       cout << "\t\t\t\t==================================================" << endl;
+       cout << "\t\t\t\t             Name: " << storeAccount.back().name << endl;
+       cout << "\t\t\t\t             Age: " << userInfo.back().age << endl;
+       cout << "\t\t\t\t             Y\\C\\S: " << userInfo.back().yAndC << endl;
+       cout << "\t\t\t\t==================================================" << endl;
+
+
+       cout << "\t\t\t\t          [Press any key to continue]";
+       cin.get(press);
+
+       system("cls");
+
+     }
+
+    int logIn() { //FOR USER
+    	account login;
+    	char back;
+     	bool isLoggedIn = false;
+    	do{
+    	  system("cls");
+    	  do{
+     	  	cout << "\n\n\n\n\n\n\n\n\n\n";
+    	  	cout << "\t\t\t\t==================================================" << endl;
+            cout << "\t\t\t\t                 Back[Y/N]: ";
+            cin >> back;
+            cout << "\t\t\t\t==================================================" << endl;
+            if(back == 'Y' || back == 'y') {
+              cout << "\t\t\t\t                Back..." << endl;
+              cout << "\t\t\t\t==================================================" << endl;
+              accounts=0;
+              return 0;
+            } else if(back == 'N' || back == 'n') {
+              cout << "\t\t\t\t                Continue..." << endl;
+              cout << "\t\t\t\t==================================================" << endl;
+              accounts=1;
+            } else {
+              cout << "\a\t\t\t\t               Invalid input..." << endl;
+              cout << "\t\t\t\t==================================================" << endl;
+              system("cls");
+            }
+    	  } while(!(back == 'Y' || back == 'y' || back == 'N' || back == 'n'));
+
+   	    if(back == 'Y' || back == 'y') {
+            return 0;
+        } else if (back == 'N' || back == 'n' ) {
+         	cin.ignore();
+        	cout << "\t\t\t\t     Enter your name: ";
+	        getline(cin, login.name);
+	        currentUser=login.name;
+        	cout << "\t\t\t\t     Enter your password: ";
+        	getline(cin, login.password);
+        	cout << "\t\t\t\t==================================================" << endl;
+        	cout << "\t\t\t\t                  [ENTER]";
+        	cin.get();
+        	system("cls");
+        	cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tLog In.";
+        	sleep(1);
+        	system("cls");
+               for (const account& names : storeAccount) {
+                   if (names.name == login.name && names.password == login.password) {
+                       cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tSuccessfully logged in!" << endl;
+                       isLoggedIn = true;
+                       activeUser = names;
+                        return 1;
+                       break;
+                   }
+               }
+        }
+
+            if(user == 0) {
+            	system("cls");
+            	cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t==================================================" << endl;
+                cout << "\a\t\t\t\t  No user found yet. Please create an account first." << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                noAccount = true;
+                return 0;
+            }
+
+            else if(!isLoggedIn) {
+               system("cls");
+                cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t==================================================" << endl;
+                cout << "\a\t\t\t\t           No account found." << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                return 0;
+            }
+
+        } while (!isLoggedIn);
+
+            sleep(1);
+    }
+
+    void createAccountA() { //FOR ADMIN
+        adminUser++;
+        system("cls");
+     	char press;
+    	account create;
+    	info accountInfo;
+    	cin.ignore();
+
+    	cout << "\n\n\n\n\n\n\n\n" << endl;
+    	cout << "\t\t\t\t==================================================" << endl;
+    	cout << "\t\t\t\t\t        CREATE ACCOUNT" << endl;
+    	cout << "\t\t\t\t==================================================" << endl;
+	    cout << "\t\t\t\tEnter your name: ";
+    	getline(cin, create.name);
+    	cout << "\t\t\t\tEnter your password: ";
+    	getline(cin, create.password);
+        storeAccountA.push_back(create);
+       cout << "\t\t\t\t==================================================" << endl;
+       cout << "\t\t\t\t\t\t    [ENTER]";
+       cin.get(press);
+       system("cls");
+       cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t  Succesfully creating account!" << endl;
+       sleep(1);
+       system("cls");
+
+     }
+
+    void logInA() { //FOR ADMIN
+    	account login;
+    	char back;
+     	bool isLoggedIn = false;
+    	do{
+    	  system("cls");
+    	  do{
+     	  	cout << "\n\n\n\n\n\n\n\n\n\n";
+    	  	cout << "\t\t\t\t==================================================" << endl;
+            cout << "\t\t\t\t                 Back[Y/N]: ";
+            cin >> back;
+            cout << "\t\t\t\t==================================================" << endl;
+            if(back == 'Y' || back == 'y') {
+              cout << "\t\t\t\t                Back..." << endl;
+              cout << "\t\t\t\t==================================================" << endl;
+              accountA=0;
+              break;
+            } else if(back == 'N' || back == 'n') {
+              cout << "\t\t\t\t                Continue..." << endl;
+              cout << "\t\t\t\t==================================================" << endl;
+              accountA=1;
+            } else {
+              cout << "\a\t\t\t\t               Invalid input..." << endl;
+              cout << "\t\t\t\t==================================================" << endl;
+              system("cls");
+            }
+    	  } while(!(back == 'Y' || back == 'y' || back == 'N' || back == 'n'));
+
+   	    if(back == 'Y' || back == 'y') {
+            break;
+        } else if (back == 'N' || back == 'n' ) {
+         	cin.ignore();
+        	cout << "\t\t\t\t     Enter your name: ";
+	        getline(cin, login.name);
+	        currentUser=login.name;
+        	cout << "\t\t\t\t     Enter your password: ";
+        	getline(cin, login.password);
+        	cout << "\t\t\t\t==================================================" << endl;
+        	cout << "\t\t\t\t                  [ENTER]";
+        	cin.get();
+        	system("cls");
+        	cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tLog In.";
+        	sleep(1);
+        	system("cls");
+               for (const account& names : storeAccountA) {
+                   if (names.name == login.name && names.password == login.password) {
+                       cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tSuccessfully logged in!" << endl;
+                       isLoggedIn = true;
+                       break;
+                   }
+               }
+        }
+
+            if(adminUser == 0) {
+            	system("cls");
+            	cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t==================================================" << endl;
+                cout << "\a\t\t\t\t  No user found yet. Please create an account first." << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                noAccount = true;
+                break;
+            }
+
+            else if(!isLoggedIn) {
+               system("cls");
+                cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t==================================================" << endl;
+                cout << "\a\t\t\t\t           No account found." << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+            }
+
+        } while (!isLoggedIn);
+
+            sleep(1);
+    }
+
+};
+
+int app(){
+    Calendar calendar;
+	int option, numStudent, choice, options;
+	char yOrN;
+
+	do {
+	calendar.sOrA();
+
+	if(exitP) {
+	    break;
+	} //fROM sOrA
+	if(userInfo.back().role == "Admin") {
+		do {
+		system("cls");
+		cout << "\n\n\n\n\n\n\n\n";
+		cout << "\t\t\t\t==================================================" << endl;
+    	cout << "\t\t\t\t|\t[1]Create account.\t\t\t |\n\t\t\t\t|\t[2]Log in.\t\t\t\t |\n\t\t\t\t|\t[3]Back.\t\t\t\t |\n\t\t\t\t|\t[4]Exit.\t\t\t\t |" << endl;
+    	cout << "\t\t\t\t==================================================" << endl;
+    	cout << "\t\t\t\tPlease select an option: ";
+    	cin >> options;
+    	if(options == 1) {
+    		system("cls");
+    		calendar.createAccountA();
+    		system("cls");
+		} else if(options == 2) {
+			calendar.logInA();
+			if(accountA > 0) {
+	          if(!storeAccount.empty()) {
+	        	char enter1;
+	        	do{
+	        	system("cls");
+	        	cout << "\n\n\n\n\n\n\n\n";
+	        	cout << "\t\t\t\t==================================================" << endl;
+                cout << "\t\t\t\t                   ADMIN" << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                cout << "\t\t\t\t            List of student users" << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                for(int x = 0; x < user; x++) {
+                   cout << "\t\t\t\t\t\t[" << x + 1 << "] " << storeAccount[x].name << endl;
+                   cout << "\t\t\t\t__________________________________________________" << endl;
+                }
+                cout << "\t\t\t\tEnter the number of student: ";
+                cin >> numStudent;
+                system("cls");
+                cout << "\n\n\n\n\n\n\n\n";
+                cout << "\t\t\t\t==================================================" << endl;
+
+
+                   cout << "\t\t\t\t\t\tName: " << storeAccount[numStudent-1].name << endl;
+                     cout << "\t\t\t\t\t\tAge: " << age[numStudent-1] << endl;
+                     cout << "\t\t\t\t\t\tCourse, year,section: " << studentYAndC[numStudent-1] << endl;
+                if(events[storeAccount[numStudent-1].name].size() > 0){
+                     for (const auto& schedEvent : events[storeAccount[numStudent-1].name]){
+
+                      cout << "\t\t\t\t==================================================" << endl;
+                       cout << "\t\t\t\t\t\tStudent Schedule" << endl;
+                       cout << "\t\t\t\t==================================================" << endl;
+                       cout << "\t\t\t\tEvent title: " << schedEvent.title << endl;
+                       cout << "\t\t\t\tDate: " << schedEvent.date << endl;
+                       cout << "\t\t\t\tEvent description: " <<schedEvent.description << endl;
+                       cout << "\t\t\t\t==================================================" << endl;
+                     }
+                }
+
+
+                    else {
+              	       cout << "\t\t\t\t==================================================" << endl;
+              	       istringstream iss(storeAccount[numStudent-1].name);
+              	       string firstName1;
+              	       iss >> firstName1;
+                       cout << "\t\t\t\t\tNo schedule found in " << firstName1 << "'s account. " << endl;
+				       cout << "\t\t\t\t==================================================" << endl;
+                     }
+
+
+
+
+               cout << "\t\t\t\t                     [ENTER]";
+               cin.get(enter1);
+               cin.ignore();
+               system("cls");
+               cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\tWant to see more student schedule record?[Y/N]: ";
+               cin >> yOrN;
+
+               if(yOrN == 'N' || yOrN == 'n') {
+                  break;
+               //The program will go back to role selection.
+               } else if(yOrN == 'Y' || yOrN == 'y') {
+               //The program will go back to list of students name.
+               } else {
+                   cout << "Invalid input please try again." << endl;
+             }
+               } while(yOrN == 'Y' || yOrN == 'y');
+	       } else {
+		       cout << "\t\t\t\t==================================================" << endl;
+	        cout << "\a\t\t\t\t\t     No student record found." << endl;
+	        cout << "\t\t\t\t==================================================" << endl;
+	        sleep(2);
+	        system("cls");
+	       }
+    }
+		} else if(options == 3) {
+			//BACK TO ROLE SELECTION
+			system("cls");
+	     	cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t     Returning to role selection." << endl;
+	    	sleep(1);
+	    	system("cls");
+		} else if(options == 4) {
+			system("cls");
+            cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\tExit .";
+			return 0;
+		} else {
+			system("cls");
+			cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tInvalid input!" << endl;
+			sleep(1);
+			system("cls");
+			break;
+		}
+    } while(options < 3 || options > 3);
+}
+
+
+	if(userInfo.back().role == "Student") {
+	do {
+	system("cls");
+	cout << "\n\n\n\n\n\n\n\n";
+	cout << "\t\t\t\t==================================================" << endl;
+	cout << "\t\t\t\t                   User[" << user << "]                 " << endl;
+	cout << "\t\t\t\t==================================================" << endl;
+	cout << "\t\t\t\t|\t[1]Create account.\t\t\t |\n\t\t\t\t|\t[2]Log in.\t\t\t\t |\n\t\t\t\t|\t[3]Back.\t\t\t\t |\n\t\t\t\t|\t[4]Exit.\t\t\t\t |" << endl;
+	cout << "\t\t\t\t==================================================" << endl;
+	cout << "\t\t\t\tPlease select an option: ";
+	cin >> option;
+
+	if(option == 1) { //CREATE AN ACCOUNT
+	   system("cls");
+	   cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tCreate an account." << endl;
+	   sleep(1);
+	   system("cls");
+	   calendar.createAccount();
+	} else if(option == 2) { //LOG IN
+	   system("cls");
+	   cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\tLog in." << endl;
+	   sleep(1);
+	   system("cls");
+
+
+
+	   system("cls");
+	   if(calendar.logIn() == 1) {
+       Calendar calendar;
+       do{
+       	cout << "\n\n\n\n\n\n\n\n";
+       	cout << "\t\t\t\t==================================================" << endl;
+        cout << "\t\t\t\t           Schedule Management System             " << endl;
+        cout << "\t\t\t\t==================================================" << endl;
+        cout << "\t\t\t\t|            1. Add Event                        |" << endl;
+        cout << "\t\t\t\t|            2. View Events                      |" << endl;
+        cout << "\t\t\t\t|            3. Delete Event                     |" << endl;
+        cout << "\t\t\t\t|            4. Update Event                     |" << endl;
+        cout << "\t\t\t\t|            5. Check for Notification           |" << endl;
+        cout << "\t\t\t\t|            6. Calendar                         |" << endl;
+        cout << "\t\t\t\t|            7. Exit                             |" << endl;
+        cout << "\t\t\t\t|            8. Log out                          |" << endl;
+        cout << "\t\t\t\t==================================================" << endl;
+        cout << "\t\t\t\tEnter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: {
+                string title, description, date;
+                system("cls");
+                cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t==================================================" << endl;
+                cout << "\t\t\t\t                 ADD EVENT" << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                cin.ignore();
+                cout << "\t\t\t\tEnter event title: ";
+                getline(cin, title);
+                cout << "\t\t\t\tEnter event description: ";
+                getline(cin, description);
+                cout << "\t\t\t\tEnter event date and time (YYYY-MM-DD HH:MM): ";
+                getline(cin, date);
+                Event newEvent = {title, description, date};
+                calendar.addEvent(currentUser, newEvent);
+                break;
+            }
+            case 2:
+                calendar.viewEvents(currentUser);
+                break;
+            case 3: {
+                string title;
+                system("cls");
+                cout << "\n\n\n\n\n\n\n\n";
+                cout << "\t\t\t\t==================================================" << endl;
+                cout << "\t\t\t\tEnter event title to delete: ";
+                cin.ignore();
+                getline(cin, title);
+                cout << "\t\t\t\t==================================================" << endl;
+                calendar.deleteEvent(currentUser, title);
+                break;
+            }
+            case 4:
+            	//UPDATE EVENT BASED ON EVENT NAME
+            	system("cls");
+                cout << "\n\n\n\n\n\n\n\n";
+                cout << "\t\t\t\t==================================================" << endl;
+                cout << "\t\t\t\t               Not available yet: " << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                system("cls");
+                break;
+            case 5:
+                //calendar.checkForNotification();
+                system("cls");
+            	cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\tNo notification available yet." << endl;
+            	sleep(1);
+            	system("cls");
+                break;
+            case 6:
+            	system("cls");
+            	cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\tNo calendar available yet." << endl;
+            	sleep(1);
+            	system("cls");
+            	break;
+            case 7:
+            	system("cls");
+                cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\tExit .";
+	            sleep(1);
+	            system("cls");
+                return 0;
+            case 8:
+            	system("cls");
+                cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\tLog out." << endl;
+                sleep(1);
+                system("cls");
+                cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\tBack to role selection." << endl;
+                sleep(1);
+                system("cls");
+                break;
+            default:
+            	cout << "\t\t\t\t==================================================" << endl;
+                cout << "\a\t\t\t\t               Invalid choice.                    " << endl;
+                cout << "\t\t\t\t==================================================" << endl;
+                sleep(2);
+        }
+    } while(choice != 8);
+}
+	} else if(option == 3) {
+		system("cls");
+		cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\tReturning to role selection ." << endl;
+		sleep(1);
+		system("cls");
+		userStudent--;
+		break;
+	} else if(option == 4) {
+		system("cls");
+	    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\tExit .";
+	    sleep(1);
+	    system("cls");
+	    break;
+	} else {
+		cout << "\t\t\t\t==================================================" << endl;
+		cout << "\a\t\t\t\t       Invalid input please try again" << endl;
+		cout << "\t\t\t\t==================================================" << endl;
+		sleep(3);
+		system("cls");
+	}
+
+if(choice == 8) {
+
+    continue;
+}
+
+} while (option > 0 || option > 3 || option < 4 || accounts == 0);
+}
+
+if(option == 4) {
+	  break;
+	}
+
+} while(userInfo.empty() || option == 3 || choice == 8 || yOrN == 'N' || yOrN == 'n' || true || options == 3);
+}
+int main () {
+	while(true){
+        app();
+	}
+	return 0;
+}
